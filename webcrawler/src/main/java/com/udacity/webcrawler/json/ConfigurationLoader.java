@@ -1,8 +1,12 @@
 package com.udacity.webcrawler.json;
 
 import java.io.Reader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
+
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A static utility class that loads a JSON configuration file.
@@ -25,8 +29,17 @@ public final class ConfigurationLoader {
    */
   public CrawlerConfiguration load() {
     // TODO: Fill in this method.
+    CrawlerConfiguration crawlerConfig = null;
 
-    return new CrawlerConfiguration.Builder().build();
+    try{
+      Reader reader = Files.newBufferedReader(this.path);
+      crawlerConfig = read(reader);
+      reader.close();
+    }
+    catch(Exception ex){
+      System.out.println(ex);
+    }
+    return crawlerConfig;
   }
 
   /**
@@ -39,7 +52,21 @@ public final class ConfigurationLoader {
     // This is here to get rid of the unused variable warning.
     Objects.requireNonNull(reader);
     // TODO: Fill in this method
+    ObjectMapper objMapper = new ObjectMapper();
+    objMapper.disable(JsonParser.Feature.AUTO_CLOSE_SOURCE);
+    CrawlerConfiguration deserialize = null;
 
-    return new CrawlerConfiguration.Builder().build();
+    try{
+      deserialize = objMapper.readValue(reader, CrawlerConfiguration.class);
+    }
+    catch(Exception ex){
+      System.out.println(ex);
+    }
+
+    return deserialize;
   }
+
+  // public static void main(String args[]){
+  //   Path
+  // }
 }
