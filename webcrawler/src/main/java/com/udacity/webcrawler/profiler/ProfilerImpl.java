@@ -12,7 +12,8 @@ import java.nio.file.StandardOpenOption;
 import java.time.Clock;
 import java.time.ZonedDateTime;
 import java.util.Objects;
-import java.util.Set;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 
@@ -36,17 +37,31 @@ final class ProfilerImpl implements Profiler {
   @Override
   public <T> T wrap(Class<T> klass, T delegate) {
     Objects.requireNonNull(klass);
-
     // TODO: Use a dynamic proxy (java.lang.reflect.Proxy) to "wrap" the delegate in a
     //       ProfilingMethodInterceptor and return a dynamic proxy from this method.
     //       See https://docs.oracle.com/javase/10/docs/api/java/lang/reflect/Proxy.html.
+    if(!hasAnnotationProfiledMethod(klass)){
+      throw new IllegalArgumentException("There is no method with annotation Profiled in class " + klass);
+    }
+
+    InvocationHandler invocationHandler = new ProfilingMethodInterceptor(clock, delegate, state);
     @SuppressWarnings("unchecked")
     T proxy = (T)Proxy.newProxyInstance(
                     delegate.getClass().getClassLoader(),
                     new Class[]{klass},
-                    new ProfilingMethodInterceptor(clock, delegate, state));
-
+                    invocationHandler);
     return proxy;
+
+  }
+
+  public static boolean hasAnnotationProfiledMethod(Class<?> klass) {
+    Method[] methods = klass.getDeclaredMethods();
+    for (Method method : methods) {
+        if (method.isAnnotationPresent(Profiled.class)) {
+            return true;
+        }
+    }
+    return false;
   }
 
   @Override

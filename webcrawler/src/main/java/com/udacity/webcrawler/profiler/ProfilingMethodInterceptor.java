@@ -1,8 +1,10 @@
 package com.udacity.webcrawler.profiler;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Clock;
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.util.Objects;
 import java.time.Duration;
@@ -31,14 +33,26 @@ final class ProfilingMethodInterceptor implements InvocationHandler {
     //       invoke the method using the object that is being profiled. Finally, for profiled
     //       methods, the interceptor should record how long the method call took, using the
     //       ProfilingState methods.
-    Object retVal;
+    Object retVal = null;
     if (method.isAnnotationPresent(Profiled.class)) {
-        Instant start = clock.instant();
+      Instant start = clock.instant();
+      try{
         retVal = method.invoke(obj, args);
+      }
+      catch(IllegalArgumentException ex){
+        throw new IllegalArgumentException("Wrong arguments passed in method " + method);
+      }
+      catch(IllegalAccessException ex){
+        throw new IllegalAccessException("wrong access to the method " + method);
+      }
+      catch(InvocationTargetException ex){
+        throw ex.getTargetException();
+      }
+      finally{
         Instant end = clock.instant();
         Duration duration = Duration.between(start, end);
-
         profileStateObj.record(obj.getClass(), method, duration);
+      }
 
     } else {
         retVal = method.invoke(obj, args);
