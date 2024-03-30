@@ -1,5 +1,6 @@
 package com.udacity.webcrawler.json;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.io.Writer;
 import java.io.File;
 import java.nio.file.Files;
@@ -36,17 +37,10 @@ public final class CrawlResultWriter {
     Objects.requireNonNull(path);
     // TODO: Fill in this method.
     File outputFile = new File(path.toString());
-    Writer writer = null;
 
-    try{
-      if(outputFile.isFile()){
-        writer = Files.newBufferedWriter(path, StandardOpenOption.APPEND);
-      }
-      else{
-        writer = Files.newBufferedWriter(path, StandardOpenOption.WRITE);
-      }
+    try(Writer writer = outputFile.isFile() ? Files.newBufferedWriter(path, StandardOpenOption.APPEND) :
+                                              Files.newBufferedWriter(path, StandardOpenOption.WRITE)){
       write(writer);
-      writer.close();
     }
     catch(Exception ex){
       System.out.println(ex);
@@ -58,6 +52,7 @@ public final class CrawlResultWriter {
    *
    * @param writer the destination where the crawl result data should be written.
    */
+  @JsonDeserialize(builder = CrawlResult.Builder.class)
   public void write(Writer writer) {
     // This is here to get rid of the unused variable warning.
     Objects.requireNonNull(writer);

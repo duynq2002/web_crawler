@@ -65,7 +65,7 @@ final class ProfilerImpl implements Profiler {
   }
 
   @Override
-  public void writeData(Path path) {
+  public void writeData(Path path) throws IOException {
     // TODO: Write the ProfilingState data to the given file path. If a file already exists at that
     //       path, the new data should be appended to the existing file.
     Objects.requireNonNull(path);
@@ -75,9 +75,6 @@ final class ProfilerImpl implements Profiler {
       try (var out = outputFile.isFile() ? new ObjectOutputStream(Files.newOutputStream(path, StandardOpenOption.APPEND)) :
                                            new ObjectOutputStream(Files.newOutputStream(path, StandardOpenOption.WRITE))) {
         out.writeObject(state);
-
-      } catch (Exception e) {
-          e.printStackTrace();
       }
     }
   }

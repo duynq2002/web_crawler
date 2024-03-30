@@ -13,6 +13,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 import java.util.regex.Pattern;
@@ -53,8 +56,8 @@ final class ParallelWebCrawler implements WebCrawler {
   @Override
   public CrawlResult crawl(List<String> startingUrls) {
     Instant deadline = clock.instant().plus(timeout);
-    Map<String, Integer> counts = new HashMap<>();
-    Set<String> visitedUrls = new HashSet<>();
+    ConcurrentMap<String, Integer> counts = new ConcurrentHashMap<>();
+    ConcurrentSkipListSet<String> visitedUrls = new ConcurrentSkipListSet<>();
 
     for (String url : startingUrls) {
       pool.invoke(new CrawInternalTask(url, deadline, maxDepth, counts, visitedUrls));
@@ -133,6 +136,5 @@ final class ParallelWebCrawler implements WebCrawler {
                                       .collect(Collectors.toList());
       invokeAll(subTasks);
     }
-
   }
 }

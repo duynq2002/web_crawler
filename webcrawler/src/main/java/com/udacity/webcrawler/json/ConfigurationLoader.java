@@ -29,17 +29,14 @@ public final class ConfigurationLoader {
    */
   public CrawlerConfiguration load() {
     // TODO: Fill in this method.
-    CrawlerConfiguration crawlerConfig = null;
 
-    try{
-      Reader reader = Files.newBufferedReader(this.path);
-      crawlerConfig = read(reader);
-      reader.close();
+    try(Reader reader = Files.newBufferedReader(this.path)){
+      return read(reader);
     }
     catch(Exception ex){
       System.out.println(ex);
     }
-    return crawlerConfig;
+    return new CrawlerConfiguration.Builder().build();
   }
 
   /**
@@ -57,7 +54,7 @@ public final class ConfigurationLoader {
     CrawlerConfiguration deserialize = null;
 
     try{
-      deserialize = objMapper.readValue(reader, CrawlerConfiguration.class);
+      deserialize = objMapper.readValue(reader, CrawlerConfiguration.Builder.class).build();
     }
     catch(Exception ex){
       System.out.println(ex);
